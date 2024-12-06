@@ -7,7 +7,7 @@ Img2Url 是一款适用于 chatgpt-on-wechat 的图片处理插件，能够将�
 # 一. 获取图床API密钥
 1. 注册并登录图床服务网站https://imgbb.com/
 
-2. 点击个人主页左上角的关于→API，点击Add API Key，复制备用
+2. 点击个人主页左上角的关于➡️API，点击Add API Key，复制备用
 
 # 二. 安装插件和配置config文件
 1. 在微信机器人聊天窗口输入命令：
