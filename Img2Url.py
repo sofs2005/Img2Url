@@ -71,79 +71,56 @@ class Img2Url(Plugin):
     def get_image_data(self, msg, content):
         """获取图片数据的辅助函数"""
         try:
-            # 打印调试信息
-            logger.debug(f"[Img2Url] 消息类型: {type(content)}")
-            logger.debug(f"[Img2Url] 消息内容: {content[:100] if isinstance(content, str) else '二进制数据'}")
-            logger.debug(f"[Img2Url] 消息属性: {dir(msg)}")
-
-            # 1. 尝试从原始消息的download方法获取
-            if hasattr(msg, '_rawmsg') and hasattr(msg._rawmsg, 'download'):
-                logger.debug("[Img2Url] 尝试使用_rawmsg.download方法获取图片")
+            # 1. 尝试从msg.prepare()获取图片路径
+            if hasattr(msg, 'prepare'):
                 try:
-                    # 获取文件名
+                    msg.prepare()
+                    if isinstance(content, str) and os.path.exists(content):
+                        with open(content, 'rb') as f:
+                            image_data = f.read()
+                        logger.debug("[Img2Url] 成功从msg.prepare()获取图片数据")
+                        return base64.b64encode(image_data).decode('utf-8')
+                except Exception as e:
+                    logger.warning(f"[Img2Url] 使用msg.prepare()获取图片失败: {e}")
+
+            # 2. 尝试从原始消息的download方法获取
+            if hasattr(msg, '_rawmsg') and hasattr(msg._rawmsg, 'download'):
+                try:
                     file_name = msg._rawmsg.get('FileName', 'temp.png')
-                    # 创建临时文件路径
                     temp_path = os.path.join(os.getcwd(), 'tmp', file_name)
-                    # 下载图片
                     msg._rawmsg.download(temp_path)
                     
                     if os.path.exists(temp_path):
                         with open(temp_path, 'rb') as f:
                             image_data = f.read()
-                        # 删除临时文件
                         try:
                             os.remove(temp_path)
                         except:
                             pass
-                        logger.debug("[Img2Url] 成功从_rawmsg.download获   图片数据")
                         return base64.b64encode(image_data).decode('utf-8')
                 except Exception as e:
                     logger.warning(f"[Img2Url] 使用_rawmsg.download获取图片失败: {e}")
-
-            # 2. 尝试从Content获取图片数据
-            if hasattr(msg, '_rawmsg') and 'Content' in msg._rawmsg:
-                try:
-                    content_data = msg._rawmsg['Content']
-                    if isinstance(content_data, str) and len(content_data) > 0:
-                        # 尝试解码Content数据
-                        try:
-                            image_data = base64.b64decode(content_data)
-                            logger.debug("[Img2Url] 成功从Content解码图片数据")
-                            return base64.b64encode(image_data).decode('utf-8')
-                        except:
-                            pass
-                except Exception as e:
-                    logger.warning(f"[Img2Url] 从Content获取图片数据失败: {e}")
 
             # 3. 尝试从Text属性获取
             if hasattr(msg, '_rawmsg') and 'Text' in msg._rawmsg:
                 try:
                     text_fn = msg._rawmsg['Text']
                     if callable(text_fn):
-                        # 创建临时文件路径
                         temp_path = os.path.join(os.getcwd(), 'tmp', 'temp.png')
-                        # 调用Text函数下载图片
                         text_fn(temp_path)
                         
                         if os.path.exists(temp_path):
                             with open(temp_path, 'rb') as f:
                                 image_data = f.read()
-                            # 删除临时文件
                             try:
                                 os.remove(temp_path)
                             except:
                                 pass
-                            logger.debug("[Img2Url] 成功从Text函数获取图片数据")
                             return base64.b64encode(image_data).decode('utf-8')
                 except Exception as e:
                     logger.warning(f"[Img2Url] 从Text获取图片数据失败: {e}")
 
-            # 如果所有方法都失败，打印更多调试信息
             logger.error("[Img2Url] 所有获取图片数据的方法都失败了")
-            if hasattr(msg, '_rawmsg'):
-                logger.debug(f"[Img2Url] 原始消息属性: {dir(msg._rawmsg)}")
-                logger.debug(f"[Img2Url] 原始消息内容: {msg._rawmsg}")
-            
             return None
 
         except Exception as e:
