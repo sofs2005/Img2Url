@@ -1,6 +1,6 @@
 # Img2Url
 
-Img2Url 是一款适用于 chatgpt-on-wechat 的图片处理插件，能够将用户上传到微信的图片转换为在线URL链接，方便对图片以其他途径进行后续处理。
+Img2Url 是一款适用于 dify-on-wechat 的图片处理插件，能够将用户上传到微信的图片转换为在线URL链接，方便对图片以其他途径进行后续处理。
 
 该插件使用起来非常容易，只需按以下步骤简单操作即可。
 
@@ -12,9 +12,8 @@ Img2Url 是一款适用于 chatgpt-on-wechat 的图片处理插件，能够将�
 2. 点击个人主页左上角的关于➡️API，点击Add API Key，复制备用
 
 ## 方式2：Lsky Pro图床
-1. 准备你的 Lsky Pro 账号信息：
-   - 登录邮箱
-   - 登录密码
+1. 准备你的 Lsky Pro 信息：
+   - API Token（在 Lsky Pro 管理后台获取）
    - API地址（通常格式为：`http://your-domain/api/v1`）
 
 # 二. 安装插件和配置config文件
@@ -24,17 +23,25 @@ Img2Url 是一款适用于 chatgpt-on-wechat 的图片处理插件，能够将�
    ```
 
 2. 进入 config.json 文件，根据选择的图床服务配置相应参数：
+
+   方式1：使用 ImgBB 图床
    ```json
    {
        "imgbb_api_key": "your_imgbb_api_key",
-       "lsky_api_url": "http://your.lsky.pro/api/v1",
-       "lsky_email": "your_email",
-       "lsky_password": "your_password",
-       "upload_service": "imgbb"  // 使用 ImgBB 填写 "imgbb"，使用 Lsky Pro 填写 "lsky"
+       "upload_service": "imgbb"
    }
    ```
 
-3. 重启 chatgpt-on-wechat 项目
+   方式2：使用 Lsky Pro 图床
+   ```json
+   {
+       "lsky_api_url": "http://your.lsky.pro/api/v1",
+       "lsky_token": "your_api_token",
+       "upload_service": "lsky"
+   }
+   ```
+
+3. 重启 dify-on-wechat 项目
 
 4. 在微信机器人聊天窗口输入 #scanp 命令扫描新插件是否已添加至插件列表
 
@@ -60,7 +67,7 @@ Img2Url 是一款适用于 chatgpt-on-wechat 的图片处理插件，能够将�
      - API Key 是否正确
    - Lsky Pro：
      - API 地址是否正确（必须包含 /api/v1）
-     - 邮箱和密码是否正确
+     - API Token 是否正确
      - 账号是否有上传权限
    - 通用检查：
      - 网络连接是否正常
@@ -70,10 +77,10 @@ Img2Url 是一款适用于 chatgpt-on-wechat 的图片处理插件，能够将�
 2. 如遇到其他问题，请在 GitHub 仓库提交 Issue
 
 # 五. 版本信息
-- 版本：1.2
+- 版本：1.3
 - 更新内容：
-  - 新增 Lsky Pro 图床完整支持
-  - 优化 Token 获取和认证流程
+  - 优化 Lsky Pro 图床支持
+  - 简化认证流程，直接使用 API Token
   - 改进错误处理和日志记录
   - 优化配置文件结构
 - 作者：sofs2005
