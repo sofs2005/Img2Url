@@ -87,4 +87,4 @@ Img2Url 是一款适用于 dify-on-wechat 的图片处理插件，能够将用�
 - 最后更新：2025-01-07
 - Github个人主页：https://github.com/sofs2005
 
-本插件基于Lingyuzhou的Img2Url插件修改，感谢Lingyuzhou的贡献。
+本插件基于Lingyuzhou的Img2Url插件修改，另本插件中连续发送图片功能由深蓝老大提供代码支持，感谢两位大佬的贡献。
