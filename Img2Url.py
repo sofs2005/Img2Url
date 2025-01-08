@@ -35,7 +35,7 @@ class Img2Url(Plugin):
             
         # 设置触发词和状态标记
         self.trigger_word = "图转链接"
-        self.waiting_for_image = {}
+        self.waiting_for_image = {}  # 修改为字典，值可以是URL列表
         
         # 注册消息处理器
         self.handlers[Event.ON_HANDLE_CONTEXT] = self.on_handle_context
@@ -135,15 +135,34 @@ class Img2Url(Plugin):
         if not msg.from_user_id:
             return
             
+        user_id = msg.from_user_id
+
         # 处理文本消息中的触发词
-        if e_context['context'].type == ContextType.TEXT and self.trigger_word in content:
-            self.waiting_for_image[msg.from_user_id] = True
-            e_context['reply'] = Reply(ReplyType.TEXT, "请发送需要转换的图片")
-            e_context.action = EventAction.BREAK_PASS
-            return
-            
+        if e_context['context'].type == ContextType.TEXT:
+             if self.trigger_word in content:
+                 self.waiting_for_image[user_id] = []  # 初始化用户上传列表
+                 e_context['reply'] = Reply(ReplyType.TEXT, "请发送需要转换的图片")
+                 e_context.action = EventAction.BREAK_PASS
+                 return
+             elif user_id in self.waiting_for_image:
+                 # 如果用户发送的是非图片消息，则发送已上传的图片链接
+                 if self.waiting_for_image[user_id]:
+                     image_urls = self.waiting_for_image[user_id]
+                     
+                     # 组装所有图片的URL到一个字符串中
+                     url_text = "====== 图片链接汇总 ======\n"
+                     for index, url in enumerate(image_urls, start=1):
+                         url_text += f"{index}. {url}\n"
+                     url_text += "====================="
+
+                     e_context['reply'] = Reply(ReplyType.TEXT, url_text)
+                     e_context['context'].kwargs['no_image_parse'] = True
+                     e_context.action = EventAction.BREAK_PASS
+                 del self.waiting_for_image[user_id] # 清除等待状态
+                 return
+
         # 处理图片消息
-        if e_context['context'].type == ContextType.IMAGE and msg.from_user_id in self.waiting_for_image:
+        if e_context['context'].type == ContextType.IMAGE and user_id in self.waiting_for_image:
             try:
                 logger.debug(f"[Img2Url] 开始处理图片消息: {msg}")
                 
@@ -162,26 +181,25 @@ class Img2Url(Plugin):
                     e_context['reply'] = Reply(ReplyType.ERROR, "上传图片失败")
                     return
                 
-                # 使用自定义格式返回图片URL
-                url_text = f"====== 图片上传成功 ======\n链接: {image_url}\n====================="
+                # 获取当前图片的序号
+                current_index = len(self.waiting_for_image[user_id]) + 1
                 
-                # 创建回复对象，不使用kwargs
-                reply = Reply(ReplyType.TEXT, url_text)
-                e_context['reply'] = reply
+                # 将图片URL添加到用户列表
+                self.waiting_for_image[user_id].append(image_url)
                 
-                # 设置上下文参数来防止图片解析
+                # 立即返回包含 URL 的消息, 并带上当前序号
+                url_text = f"====== 图片上传成功 ======\n{current_index}. {image_url}\n====================="
+                e_context['reply'] = Reply(ReplyType.TEXT, url_text)
                 e_context['context'].kwargs['no_image_parse'] = True
                 e_context.action = EventAction.BREAK_PASS
-                
-                # 清除等待状态
-                del self.waiting_for_image[msg.from_user_id]
-                
+            
             except Exception as e:
                 logger.error(f"[Img2Url] 处理图片时发生错误: {e}")
                 e_context['reply'] = Reply(ReplyType.ERROR, f"处理图片时发生错误: {e}")
-
+    
     def get_help_text(self, **kwargs):
         help_text = "图片转链接插件使用说明：\n"
         help_text += "1. 发送'图转链接'，收到反馈消息后再发送图片\n"
         help_text += "2. 插件会自动上传图片并返回可访问的URL\n"
+        help_text += "3. 您可以连续发送图片，插件会立即返回每张图片的链接，发送其他文本消息将会结束图片上传并返回所有链接的汇总\n"
         return help_text
