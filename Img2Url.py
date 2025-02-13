@@ -41,7 +41,7 @@ class Img2Url(Plugin):
             logger.error("[Img2Url] 请在config.json中配置图床API信息")
 
         # 设置触发词和状态标记
-        self.trigger_word = "图转链接"
+        self.trigger_word = "传图"
         self.waiting_for_image = {}  # 修改为字典，值可以是URL列表
         
         # 注册消息处理器
