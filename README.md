@@ -19,7 +19,7 @@ Img2Url 是一款适用于 dify-on-wechat 的图片处理插件，能够将用�
 # 二. 安装插件和配置config文件
 1. 在微信机器人聊天窗口输入命令：
    ```
-   #installp https://github.com/Lingyuzhou111/Img2Url.git
+   #installp https://github.com/sofs2005/Img2Url.git
    ```
 
 2. 进入 config.json 文件，根据选择的图床服务配置相应参数：
